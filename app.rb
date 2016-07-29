@@ -1,36 +1,20 @@
 require 'sinatra/base'
 require 'json'
-require 'sem'
+
+require File.expand_path '../sem.rb', __FILE__
 
 class App < Sinatra::Base
   include Sem
 
   post '/sem' do
-    obj = JSON.parse(request.body.read, symbolize_keys: true)
-    nobs  = obj[:nobs]
-    model = obj[:model]
-    s     = obj[:S]
+    json = JSON.parse(request.body.read, symbolize_keys: true)
+    return unless json[:nobs] && json[:model] && json[:S]
 
-    # alphaからmodel.lavを作成する
-    model_s = Sem.build_model_s(alpha)
-    File.open('./tmp/model.lav', 'w') { |file| file.write model_s }
+    File.open('./tmp/model.lav', 'w') { |file| file.write Sem.build_model_s(json[:model]) }
+    File.open('./tmp/elems.lav', 'w') { |file| file.write Sem.build_elems(json[:S]) }
 
-    # Sからelemsを作成する
-    elems = Sem.build_elems(s)
-    File.open('./tmp/elems.lav', 'w') { |file| file.write elems }
+    result = `Rscript sem.r #{json[:nobs]}`
 
-    opts = nobs
-
-    result = `Rscript sem.r #{opts}`
-
-    {}.to_json
+    result.to_json
   end
-
-  # post '/cov' do
-  #   obj = JSON.parse(request.body.read, symbolize_keys: true)
-
-  #   {
-  #     # data: [[v for v in row] for row in numpy.cov(obj['data'])],
-  #   }.to_json
-  # end
 end
