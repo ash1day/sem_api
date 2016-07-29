@@ -1,7 +1,11 @@
 source 'https://rubygems.org'
 
+gem 'rake'
 gem 'sinatra'
 gem 'puma'
 
 # gem 'rserve-client'
-gem 'rspec'
+group :test do
+  gem 'rspec'
+  gem 'rack-test'
+end

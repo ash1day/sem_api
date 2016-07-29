@@ -1,7 +1,6 @@
-require 'spec_helper'
-require './sem'
+require File.expand_path '../spec_helper.rb', __FILE__
 
-describe 'Sem' do
+describe Sem do
   describe 'build_model' do
     let(:model_s) { Sem.build_model_s(model) }
     context do
@@ -19,26 +18,6 @@ describe 'Sem' do
 
       it do
         expect(model_s).to eq "f6 =~ v0 + v1 + v2 + v3\nf7 =~ v4 + v5\nf7 ~ f6\n"
-      end
-    end
-  end
-
-  describe 'build_elems' do
-    let(:elems) { Sem.build_elems(s) }
-    context do
-      let(:s) do
-        [
-          [1.0000000, 0.7731109, 0.7155250, 0.6341241, 0.7394903, 0.8100869],
-          [0.7731109, 1.0000000, 0.7227997, 0.4515933, 0.8526245, 0.6718607],
-          [0.7155250, 0.7227997, 1.0000000, 0.2321334, 0.5787253, 0.4785180],
-          [0.6341241, 0.4515933, 0.2321334, 1.0000000, 0.5881328, 0.6095649],
-          [0.7394903, 0.8526245, 0.5787253, 0.5881328, 1.0000000, 0.7523879],
-          [0.8100869, 0.6718607, 0.4785180, 0.6095649, 0.7523879, 1.0000000]
-        ]
-      end
-
-      it do
-        expect(elems).to eq '1.0 0.7731109 1.0 0.715525 0.7227997 1.0 0.6341241 0.4515933 0.2321334 1.0 0.7394903 0.8526245 0.5787253 0.5881328 1.0 0.8100869 0.6718607 0.478518 0.6095649 0.7523879 1.0'
       end
     end
   end
