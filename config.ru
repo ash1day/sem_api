@@ -1,6 +1,6 @@
 #\ -s puma
 
 require 'sinatra'
-require './sem.rb'
+require './app.rb'
 
-run Sem
+run App
