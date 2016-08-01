@@ -1,7 +1,7 @@
 require File.expand_path '../spec_helper.rb', __FILE__
 
 describe 'App' do
-  describe '/へのアクセス' do
+  describe 'Post /sem' do
     let(:params) do
       {
         nobs: 47,
