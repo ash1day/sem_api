@@ -1,20 +1,20 @@
+# index検索が面倒くさいのでArrayクラス拡張
 class Array
+  # ある文字列を含む行から始まる段落の行のレンジを返す
   def index_range(str, buffer = 0)
     start_index = search_index(str) + buffer
     start_index..before_next_empty_line_index(start_index)
   end
 
+  # ある文字列を含む行のインデックスを返す
   def search_index(str)
     index { |row| row.index(str) }
   end
 
+  # indexの次に現れる空行の前の行のインデックスを返す
   def before_next_empty_line_index(index)
     empty_line_index = self[index..-1].index { |row| row.strip == '' }
-    if empty_line_index.nil?
-      -1
-    else
-      empty_line_index + index - 1
-    end
+    (empty_line_index.nil?) ? -1 : empty_line_index + index - 1
   end
 end
 
@@ -31,10 +31,12 @@ module Sem
     parse(r_out_str)
   end
 
+  # R実行結果を返す
   def exec(nobs)
     `Rscript sem.r #{nobs}`
   end
 
+  # Rからの結果の文字列をパース
   def parse(r_out_str)
     parsed_h = {}
     r_out_a = r_out_str.split("\n")
@@ -85,6 +87,7 @@ module Sem
     parsed_a
   end
 
+  # 適合度をパース
   def parse_fits(r_out_a)
     fit_vars_a = r_out_a.map { |row| row.split }
     fit_vars_h = {}
@@ -95,6 +98,7 @@ module Sem
     fit_vars_h
   end
 
+  # Rで読み込むテキストファイル用にhash to str変換
   def build_model_s(model)
     model_str = ''
 
