@@ -1,8 +1,8 @@
 # index検索が面倒くさいのでArrayクラス拡張
 class Array
   # ある文字列を含む行から始まる段落の行のレンジを返す
-  def index_range(str, buffer = 0)
-    start_index = search_index(str) + buffer
+  def index_range(str, offset = 0)
+    start_index = search_index(str) + offset
     start_index..before_next_empty_line_index(start_index)
   end
 
@@ -25,15 +25,10 @@ module Sem
     File.open('./tmp/model.lav', 'w') { |f| f.write Sem.build_model_s(model) }
     File.open('./tmp/elems.lav', 'w') { |f| f.write s.join(' '); f.puts } # 空行を入れる必要有
 
-    r_out_str = exec(nobs)
+    r_out_str = `Rscript sem.r #{nobs}`
     return if r_out_str.nil?
 
     parse(r_out_str)
-  end
-
-  # R実行結果を返す
-  def exec(nobs)
-    `Rscript sem.r #{nobs}`
   end
 
   # Rからの結果の文字列をパース
@@ -41,16 +36,16 @@ module Sem
     parsed_h = {}
     r_out_a = r_out_str.split("\n")
 
-    lantent_range     = r_out_a.index_range('Latent', 1)
-    regressions_range = r_out_a.index_range('Regressions', 1)
-    variances_range   = r_out_a.index_range('Variances', 1)
-    fits_range        = r_out_a.index_range('npar')
-
-    parsed_h['latent_variables'] = parse_vars(r_out_a[lantent_range])
-    parsed_h['regressions']      = parse_vars(r_out_a[regressions_range])
-    parsed_h['variances']        = parse_variances(r_out_a[variances_range])
-    parsed_h['goodness_of_fit']  = parse_fits(r_out_a[fits_range])
+    parsed_h['latent_variables'] = _parse(r_out_a, :parse_vars,      'Latent',      1)
+    parsed_h['regressions']      = _parse(r_out_a, :parse_vars,      'Regressions', 1)
+    parsed_h['variances']        = _parse(r_out_a, :parse_variances, 'Variances',   1)
+    parsed_h['goodness_of_fit']  = _parse(r_out_a, :parse_fits,      'npar')
     parsed_h
+  end
+
+  def _parse(r_out_a, parser_name, title, offset = 0)
+    range = r_out_a.index_range(title, offset)
+    send(parser_name, r_out_a[range])
   end
 
   def parse_vars(r_out_a)
