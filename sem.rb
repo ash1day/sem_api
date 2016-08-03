@@ -23,7 +23,10 @@ module Sem
 
   def summary(nobs, model, s)
     File.open('./tmp/model.lav', 'w') { |f| f.write Sem.build_model_s(model) }
-    File.open('./tmp/elems.lav', 'w') { |f| f.write s.join(' '); f.puts } # 空行を入れる必要有
+    File.open('./tmp/elems.lav', 'w') do |f|
+      f.puts s.join(' ')
+      f.puts build_vars_names_s(model)
+    end
 
     r_out_str = `Rscript sem.r #{nobs}`
     return if r_out_str.nil?
@@ -115,5 +118,19 @@ module Sem
     end
 
     model_str
+  end
+
+  def build_vars_names_s(model)
+    vars_nums_a = []
+    var_name_pattern = /v(\d+)/
+
+    model.each do |_, eq|
+      eq.each do |left_var, right_vars|
+        vars_nums_a.push(left_var[var_name_pattern, 1])
+        right_vars.each { |var| vars_nums_a.push(var[var_name_pattern, 1]) }
+      end
+    end
+
+    vars_nums_a.uniq.compact.sort.map { |num| "v#{num}" }.join(' ')
   end
 end
