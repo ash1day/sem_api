@@ -1,0 +1,1 @@
+install.packages("lavaan", dependencies=TRUE, repos="http://cran.at.r-project.org/")
