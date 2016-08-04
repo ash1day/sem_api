@@ -5,11 +5,10 @@ require File.expand_path '../sem.rb', __FILE__
 
 class App < Sinatra::Base
   post '/sem' do
-    content_type :json
+    payload = JSON.parse(request.body.read, symbolize_names: true)
 
-    return unless params['nobs'] && params['model'] && params['S']
-
-    sum = Sem.summary(params['nobs'], params['model'], params['S'])
+    return unless payload[:nobs] && payload[:model] && payload[:S]
+    sum = Sem.summary(payload[:nobs], payload[:model], payload[:S])
 
     sum.to_json
   end
