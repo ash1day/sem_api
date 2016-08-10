@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'rake'
 gem 'sinatra'
+gem 'sinatra-cross_origin'
 gem 'puma'
 
 # gem 'rserve-client'
