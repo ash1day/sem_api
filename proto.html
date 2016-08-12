@@ -80,7 +80,7 @@ function main(json) {
   // TODO: いい感じの矢印に
   svg.append('defs').append('marker')
     .attr('id', 'arrowhead')
-    .attr('refX', 5)
+    .attr('refX', 4.5)
     .attr('refY', 2)
     .attr('markerWidth', 5)
     .attr('markerHeight', 4)
@@ -92,7 +92,7 @@ function main(json) {
   var color = d3.scaleOrdinal(d3.schemeCategory20)
 
   var simulation = d3.forceSimulation()
-      .force('link', d3.forceLink().id(function(d) { return d.id }))
+      .force('link', d3.forceLink().distance(50).id(function(d) { return d.id }))
       .force('charge', d3.forceManyBody())
       .force('center', d3.forceCenter(width / 2, height / 2))
 
@@ -104,15 +104,18 @@ function main(json) {
       .attr('marker-end', 'url(#arrowhead)')
       .attr('stroke-width', function(d) { return Math.sqrt(d.value * 10) })
 
-  var node = svg.append('g')
-      .attr('class', 'nodes')
-    .selectAll('circle')
-    .data(graph.nodes)
-    .enter().append('circle')
-      .attr('r', 5)
+  var node = svg.selectAll('.node')
+      .data(graph.nodes)
+    .enter().append('g')
+      .attr('class', 'node')
+
+  node.append('circle')
+      .attr('r', 6)
       .attr('fill', function(d) { return color(d.group) })
 
-  node.append('title')
+  node.append('text')
+      .attr('dx', 12)
+      .attr('dy', '.35em')
       .text(function(d) { return d.id })
 
   simulation
@@ -123,15 +126,12 @@ function main(json) {
       .links(graph.links)
 
   function ticked() {
-    link
-        .attr('x1', function(d) { return d.source.x })
+    link.attr('x1', function(d) { return d.source.x })
         .attr('y1', function(d) { return d.source.y })
         .attr('x2', function(d) { return d.target.x })
         .attr('y2', function(d) { return d.target.y })
 
-    node
-        .attr('cx', function(d) { return d.x })
-        .attr('cy', function(d) { return d.y })
+    node.attr('transform', function(d) { return 'translate(' + d.x + ',' + d.y + ')' })
   }
 }
 
