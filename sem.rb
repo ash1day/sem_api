@@ -2,7 +2,9 @@
 class Array
   # ある文字列を含む行から始まる段落の行のレンジを返す
   def index_range(str, offset = 0)
-    start_index = search_index(str) + offset
+    i = search_index(str)
+    return false if i.nil?
+    start_index = i + offset
     start_index..before_next_empty_line_index(start_index)
   end
 
@@ -49,12 +51,20 @@ module Sem
 
   def _parse(r_out_a, parser_name, title, offset = 0)
     range = r_out_a.index_range(title, offset)
+    return unless range
     send(parser_name, r_out_a[range])
   end
 
   def parse_vars(r_out_a)
     parsed_h = {}
-    _r_out_a = r_out_a.map { |row| row.scan(/.{1,9}/).map(&:strip) }
+
+    _r_out_a = r_out_a.map do |row|
+      r = row.scan(/.{1,9}/).map(&:strip)
+      r[0] = r[0] + r[1]
+      r[1] = ''
+      r
+    end
+
     columns = _r_out_a.shift[2..-1]
     var_name = ''
     _r_out_a.each do |row|
