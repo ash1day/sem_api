@@ -13,10 +13,10 @@ class App < Sinatra::Base
 
   post '/sem' do
     cross_origin
-    payload = JSON.parse(request.body.read, symbolize_names: true)
+    json = JSON.parse(request.body.read, symbolize_names: true)
 
-    return unless payload[:nobs] && payload[:model] && payload[:S]
-    sum = Sem.summary(payload[:nobs], payload[:model], payload[:S])
+    return unless json[:obs_name] && json[:nobs] && json[:model] && json[:cov]
+    sum = Sem.summary(json[:obs_name], json[:nobs], json[:model], json[:cov])
 
     sum.to_json
   end

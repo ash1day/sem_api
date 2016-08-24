@@ -21,14 +21,15 @@ end
 module Sem
   extend self
 
-  def summary(nobs, model, s)
+  def summary(obs_names, nobs, model, s)
     File.open('./tmp/model.lav', 'w') { |f| f.write Sem.build_model_s(model) }
     File.open('./tmp/elems.lav', 'w') do |f|
-      f.puts s.join(' ')
-      f.puts build_vars_names_s(model)
+      f.puts s.flatten.join(' ')
+      f.puts obs_names.join(' ')
     end
 
     r_out_str = `Rscript sem.r #{nobs}`
+    puts r_out_str
     return if r_out_str.nil?
 
     parse(r_out_str)
@@ -103,8 +104,9 @@ module Sem
     Hash[model.map{ |k, v| [k.to_sym, v] }].each do |eq_key, eqs|
       op =
         case eq_key
-        when :latent_variable then :=~
-        when :regression      then :~
+        when :latent_variable then '=~'
+        when :regression      then '~'
+        when :covariance      then '~~'
         end
 
       eqs.each do |left_var, vars|
@@ -118,19 +120,5 @@ module Sem
     end
 
     model_str
-  end
-
-  def build_vars_names_s(model)
-    vars_nums_a = []
-    var_name_pattern = /v(\d+)/
-
-    model.each do |_, eq|
-      eq.each do |left_var, right_vars|
-        vars_nums_a.push(left_var[var_name_pattern, 1])
-        right_vars.each { |var| vars_nums_a.push(var[var_name_pattern, 1]) }
-      end
-    end
-
-    vars_nums_a.uniq.compact.sort.map { |num| "v#{num}" }.join(' ')
   end
 end
