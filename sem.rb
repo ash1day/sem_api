@@ -84,17 +84,16 @@ module Sem
   end
 
   def parse_variances(r_out_a)
-    parsed_a = []
+    parsed_h = {}
     _r_out_a = r_out_a.map { |row| row.scan(/.{1,9}/).map(&:strip) }
     columns = _r_out_a.shift[2..-1]
     _r_out_a.each do |row|
-      row_h = {name: row.first}
+      parsed_h[row.first] = {}
       row[2..-1].each_with_index do |str, i|
-        row_h[columns[i]] = str
+        parsed_h[row.first][columns[i]] = str
       end
-      parsed_a.push(row_h)
     end
-    parsed_a
+    parsed_h
   end
 
   # 適合度をパース
