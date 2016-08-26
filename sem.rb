@@ -44,6 +44,7 @@ module Sem
 
     parsed_h['latent_variables'] = _parse(r_out_a, :parse_vars,      'Latent',      1)
     parsed_h['regressions']      = _parse(r_out_a, :parse_vars,      'Regressions', 1)
+    parsed_h['covariances']      = _parse(r_out_a, :parse_vars,      'Covariances', 1)
     parsed_h['variances']        = _parse(r_out_a, :parse_variances, 'Variances',   1)
     parsed_h['goodness_of_fit']  = _parse(r_out_a, :parse_fits,      'npar')
     parsed_h
