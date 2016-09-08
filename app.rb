@@ -2,7 +2,7 @@ require 'sinatra'
 require 'sinatra/cross_origin'
 require 'json'
 
-require File.expand_path '../sem.rb', __FILE__
+require_relative 'sem'
 
 class App < Sinatra::Base
   register Sinatra::CrossOrigin
