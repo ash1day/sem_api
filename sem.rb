@@ -15,7 +15,8 @@ module Sem
     puts r_out_str
     return if r_out_str.nil?
 
-    parse_r_out(r_out_str)
+    parsed = parse_r_out(r_out_str)
+    parsed = add_all_vars_names(parsed, obs_names)
   end
 
   # Rからの結果の文字列をパース
@@ -54,5 +55,10 @@ module Sem
     end
 
     model_str
+  end
+
+  def add_all_vars_names(parsed, obs_names)
+    parsed['names'] = obs_names + parsed['latent_variables'].keys
+    parsed
   end
 end
