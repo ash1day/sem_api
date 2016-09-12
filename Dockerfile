@@ -3,7 +3,8 @@ FROM ruby:2.3.1-slim
 MAINTAINER "Yoshihiro Ashida <y4ashida@gmail.com>"
 
 # Install curl, git and the other libraries
-RUN apt-get clean && apt-get update && apt-get install -y \
+RUN apt-get clean && apt-get update
+RUN apt-get install -y \
       git \
       libyaml-dev \
       libssl-dev \
@@ -11,9 +12,9 @@ RUN apt-get clean && apt-get update && apt-get install -y \
       libxml2-dev \
       libxslt1-dev \
       libffi-dev \
-      build-essential \
-      r-base \
-    && rm -rf /var/lib/apt/lists/*
+      build-essential
+RUN apt-get install -y r-base
+RUN rm -rf /var/lib/apt/lists/*
 
 # Set the applilcation directory
 WORKDIR /app
