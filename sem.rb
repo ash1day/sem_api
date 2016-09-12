@@ -68,19 +68,13 @@ module Sem
     names = parsed['names']
     mat = SetableMatrix.zero(names.length)
 
-    parsed['latent_variables'].each do |lat, vars|
-      from = names.index(lat)
-      vars.each do |v|
-        to = names.index(v[:name])
-        mat[to, from] = v['Estimate'].to_f if v['Estimate']
-      end
-    end
-
-    parsed['regressions'].each do |lat, vars|
-      from = names.index(lat)
-      vars.each do |v|
-        to = names.index(v[:name])
-        mat[to, from] = v['Estimate'].to_f if v['Estimate']
+    %w(latent_variables regressions).each do |k|
+      parsed[k].each do |lat, vars|
+        from = names.index(lat)
+        vars.each do |v|
+          to = names.index(v[:name])
+          mat[to, from] = v['Estimate'].to_f if v['Estimate']
+        end
       end
     end
 
