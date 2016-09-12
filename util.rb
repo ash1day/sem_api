@@ -1,3 +1,5 @@
+require 'matrix'
+
 # index検索が面倒くさいのでArrayクラス拡張
 class Array
   # ある文字列を含む行から始まる段落の行のレンジを返す
@@ -18,4 +20,8 @@ class Array
     empty_line_index = self[index..-1].index { |row| row.strip == '' }
     (empty_line_index.nil?) ? -1 : empty_line_index + index - 1
   end
+end
+
+class SetableMatrix < Matrix
+  public :'[]=', :set_element, :set_component
 end

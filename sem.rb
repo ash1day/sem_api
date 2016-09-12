@@ -17,6 +17,7 @@ module Sem
 
     parsed = parse_r_out(r_out_str)
     parsed = add_all_vars_names(parsed, obs_names)
+    parsed = add_total_effects(parsed)
   end
 
   # Rからの結果の文字列をパース
@@ -59,6 +60,30 @@ module Sem
 
   def add_all_vars_names(parsed, obs_names)
     parsed['names'] = obs_names + parsed['latent_variables'].keys
+    parsed
+  end
+
+  def add_total_effects(parsed)
+    names = parsed['names']
+    mat = SetableMatrix.zero(names.length)
+
+    parsed['latent_variables'].each do |lat, vars|
+      y_to = names.index(lat)
+      vars.each do |v|
+        x_from = names.index(v[:name])
+        mat[x_from, y_to] = v['Estimate'].to_f if v['Estimate']
+      end
+    end
+
+    parsed['regressions'].each do |lat, vars|
+      x_from = names.index(lat)
+      vars.each do |v|
+        y_to = names.index(v[:name])
+        mat[x_from, y_to] = v['Estimate'].to_f if v['Estimate']
+      end
+    end
+
+    parsed['total_effects'] = (Matrix.I(names.length) - mat).inv.to_a
     parsed
   end
 end
