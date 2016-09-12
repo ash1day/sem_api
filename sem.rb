@@ -59,7 +59,8 @@ module Sem
   end
 
   def add_all_vars_names(parsed, obs_names)
-    parsed['names'] = obs_names + parsed['latent_variables'].keys
+    # javascript側のsortと挙動が違う場合があるので注意
+    parsed['names'] = (obs_names + parsed['latent_variables'].keys).sort
     parsed
   end
 
@@ -68,18 +69,18 @@ module Sem
     mat = SetableMatrix.zero(names.length)
 
     parsed['latent_variables'].each do |lat, vars|
-      y_to = names.index(lat)
+      from = names.index(lat)
       vars.each do |v|
-        x_from = names.index(v[:name])
-        mat[x_from, y_to] = v['Estimate'].to_f if v['Estimate']
+        to = names.index(v[:name])
+        mat[to, from] = v['Estimate'].to_f if v['Estimate']
       end
     end
 
     parsed['regressions'].each do |lat, vars|
-      x_from = names.index(lat)
+      from = names.index(lat)
       vars.each do |v|
-        y_to = names.index(v[:name])
-        mat[x_from, y_to] = v['Estimate'].to_f if v['Estimate']
+        to = names.index(v[:name])
+        mat[to, from] = v['Estimate'].to_f if v['Estimate']
       end
     end
 
