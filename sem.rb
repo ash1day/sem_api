@@ -78,7 +78,7 @@ module Sem
       end
     end
 
-    parsed['total_effects'] = (Matrix.I(names.length) - mat).inv.to_a
+    parsed['total_effects'] = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
     parsed
   end
 end
