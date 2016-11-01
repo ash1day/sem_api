@@ -77,9 +77,9 @@ module Sem
     end
 
     parsed['regressions'].each do |lat, vars|
-      from = names.index(lat)
+      to = names.index(lat)
       vars.each do |v|
-        to = names.index(v[:name])
+        from = names.index(v[:name])
         mat[to, from] = v['Estimate'].to_f if v['Estimate']
       end
     end
