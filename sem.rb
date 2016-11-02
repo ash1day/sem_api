@@ -5,8 +5,9 @@ require_relative 'parser'
 module Sem
   extend self
 
-  def summary(obs_names, model, nobs, cov, data)
+  def summary(model, obs_names, nobs, cov, data)
     if data
+      obs_names = data.keys
       cov = calc_cov(data, obs_names)
       nobs = data.first.length
     end
@@ -86,7 +87,7 @@ module Sem
 
   def add_all_vars_names(parsed, obs_names)
     # javascript側のsortと挙動が違う場合があるので注意
-    parsed['names'] = (obs_names + parsed['latent_variables'].keys).sort
+    parsed['names'] = (obs_names.map(&:to_s) + parsed['latent_variables'].keys).sort
     parsed
   end
 

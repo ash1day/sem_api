@@ -16,7 +16,7 @@ class App < Sinatra::Base
     json = JSON.parse(request.body.read, symbolize_names: true)
     return unless valid_json?(json)
 
-    sum = Sem.summary(json[:obs_names], json[:model], json[:nobs], json[:cov], json[:data])
+    sum = Sem.summary(json[:model], json[:obs_names], json[:nobs], json[:cov], json[:data])
     sum.to_json
   end
 
@@ -31,6 +31,6 @@ class App < Sinatra::Base
   private
 
   def valid_json?(json)
-    return json[:obs_names] && json[:model] && ((json[:nobs] && json[:cov]) || json[:data])
+    return json[:model] && ((json[:nobs] && json[:cov]) && json[:obs_names] || json[:data])
   end
 end

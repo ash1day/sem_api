@@ -67,7 +67,6 @@ describe 'App' do
 
       let(:params) {
         {
-          obs_names: %w(y1 y2 y3 y4 y5 y6 y7 y8 x1 x2 x3),
           data: data,
           model: {
             latent_variable: {
