@@ -5,6 +5,8 @@ gem 'sinatra'
 gem 'sinatra-cross_origin'
 gem 'puma'
 
+gem 'daru'
+
 # gem 'rserve-client'
 group :test do
   gem 'rspec'

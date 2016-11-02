@@ -1,13 +1,19 @@
+require 'daru'
 require_relative 'util'
 require_relative 'parser'
 
 module Sem
   extend self
 
-  def summary(obs_names, nobs, model, s)
+  def summary(obs_names, model, nobs, cov, data)
+    if data
+      cov = calc_cov(data, obs_names)
+      nobs = data.first.length
+    end
+
     File.open('./tmp/model.lav', 'w') { |f| f.write Sem.build_model_s(model) }
     File.open('./tmp/elems.lav', 'w') do |f|
-      f.puts s.flatten.join(' ')
+      f.puts cov.flatten.join(' ')
       f.puts obs_names.join(' ')
     end
 
@@ -18,6 +24,26 @@ module Sem
     parsed = parse_r_out(r_out_str)
     parsed = add_all_vars_names(parsed, obs_names)
     parsed = add_total_effects(parsed)
+  end
+
+  def calc_cov(data, obs_names)
+    df = Daru::DataFrame.new(data, order: obs_names.map(&:to_sym))
+    cov = Array.new(obs_names.length) { [] }
+
+    # 行列の下三角だけを配列に
+    c1 = 0
+    df.cov.each_row do |row|
+      c2 = 0
+      row.to_a.each do |n|
+        break if c2 > c1
+
+        cov[c1].push(n)
+        c2 += 1
+      end
+      c1 += 1
+    end
+
+    cov
   end
 
   # Rからの結果の文字列をパース

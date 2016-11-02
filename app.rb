@@ -14,9 +14,9 @@ class App < Sinatra::Base
   post '/sem' do
     cross_origin
     json = JSON.parse(request.body.read, symbolize_names: true)
-    return unless json[:obs_names] && json[:nobs] && json[:model] && json[:cov]
+    return unless valid_json?(json)
 
-    sum = Sem.summary(json[:obs_names], json[:nobs], json[:model], json[:cov])
+    sum = Sem.summary(json[:obs_names], json[:model], json[:nobs], json[:cov], json[:data])
     sum.to_json
   end
 
@@ -26,5 +26,11 @@ class App < Sinatra::Base
     response.headers['Access-Control-Allow-Headers'] = 'X-Requested-With, X-HTTP-Method-Override, Content-Type, Cache-Control, Accept'
 
     200
+  end
+
+  private
+
+  def valid_json?(json)
+    return json[:obs_names] && json[:model] && ((json[:nobs] && json[:cov]) || json[:data])
   end
 end

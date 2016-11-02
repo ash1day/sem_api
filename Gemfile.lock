@@ -1,6 +1,9 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    backports (3.6.8)
+    daru (0.1.4.1)
+      backports
     diff-lcs (1.2.5)
     puma (3.6.0)
     rack (1.6.4)
@@ -33,6 +36,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  daru
   puma
   rack-test
   rake
