@@ -86,13 +86,18 @@ module Sem
   end
 
   def add_all_vars_names(parsed, obs_names)
+    parsed['names'] = {}
+
     # javascript側のsortと挙動が違う場合があるので注意
-    parsed['names'] = (obs_names.map(&:to_s) + parsed['latent_variables'].keys).sort
+    parsed['names']['obs'] = obs_names.map(&:to_s).sort
+    parsed['names']['lat'] = parsed['latent_variables'].keys.sort
     parsed
   end
 
   def add_total_effects(parsed)
-    names = parsed['names']
+    total_effects = {}
+
+    names = parsed['names']['obs'] + parsed['names']['lat']
     mat = SetableMatrix.zero(names.length)
 
     parsed['latent_variables'].each do |lat, vars|
@@ -111,7 +116,9 @@ module Sem
       end
     end
 
-    parsed['total_effects'] = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
+    total_effects['order'] = names
+    total_effects['values'] = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
+    parsed['total_effects'] = total_effects
     parsed
   end
 end
