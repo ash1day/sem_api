@@ -10,6 +10,9 @@ module Sem
       cov = calc_cov(data, obs_names)
       nobs = data.first.length
     end
+  @@cached_obs_names = {}
+  @@cached_lat_names = {}
+
 
     File.open('./tmp/model.lav', 'w') { |f| f.write Sem.build_model_s(model) }
     File.open('./tmp/elems.lav', 'w') do |f|
@@ -72,10 +75,10 @@ module Sem
         end
 
       eqs.each do |left_var, vars|
-        model_str += "#{left_var} #{op} "
+        model_str += "#{to_tmp_name(left_var)} #{op} "
         vars.each_with_index do |var, key|
           model_str += ' + ' if key >= 1
-          model_str += var
+          model_str += "#{to_tmp_name(var)}"
         end
         model_str += "\n"
       end
@@ -88,30 +91,36 @@ module Sem
     parsed['names'] = {}
 
     # javascript側のsortと挙動が違う場合があるので注意
-    parsed['names']['obs'] = obs_names.map(&:to_s).sort
-    parsed['names']['lat'] = parsed['latent_variables'].keys.sort
+    parsed['names']['obs'] = obs_names.map { |n| to_original_name(n.to_s) }.sort
+    parsed['names']['lat'] = parsed['latent_variables']&.keys&.sort
     parsed
   end
 
   def add_total_effects(parsed)
     total_effects = {}
 
-    names = parsed['names']['obs'] + parsed['names']['lat']
+    names = parsed['names']['obs']
+    names += parsed['names']['lat'] unless parsed['names']['lat'].empty?
+
     mat = SetableMatrix.zero(names.length)
 
-    parsed['latent_variables'].each do |lat, vars|
-      from = names.index(lat)
-      vars.each do |v|
-        to = names.index(v[:name])
-        mat[to, from] = v['Estimate'].to_f if v['Estimate']
+    unless parsed['latent_variables'].empty?
+      parsed['latent_variables'].each do |lat, vars|
+        from = names.index(lat)
+        vars.each do |v|
+          to = names.index(v[:name])
+          mat[to, from] = v['Estimate'].to_f if v['Estimate']
+        end
       end
     end
 
-    parsed['regressions'].each do |lat, vars|
-      to = names.index(lat)
-      vars.each do |v|
-        from = names.index(v[:name])
-        mat[to, from] = v['Estimate'].to_f if v['Estimate']
+    unless parsed['regressions'].empty?
+      parsed['regressions'].each do |lat, vars|
+        to = names.index(lat)
+        vars.each do |v|
+          from = names.index(v[:name])
+          mat[to, from] = v['Estimate'].to_f if v['Estimate']
+        end
       end
     end
 
@@ -119,6 +128,37 @@ module Sem
     total_effects['values'] = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
     parsed['total_effects'] = total_effects
     parsed
+  end
+
+  ## cache_names
+
+  def cache_names(data)
+    @@cached_obs_names = {}
+    @@cached_lat_names = {}
+
+    data.each do |original_name, v|
+      @@cached_obs_names[original_name.to_sym] = "obs#{@@cached_obs_names.length}"
+    end
+
+    @@cached_obs_names.each do |original_name, tmp_name|
+      data[tmp_name.to_sym] = data.delete(original_name)
+    end
+  end
+
+  def to_tmp_name(original_name)
+    if @@cached_obs_names[original_name.to_sym]
+      @@cached_obs_names[original_name.to_sym]
+    else
+      @@cached_lat_names[original_name.to_sym] = "lat#{@@cached_lat_names.length}"
+    end
+  end
+
+  def to_original_name(cached_name)
+    if @@cached_obs_names.key(cached_name)
+      @@cached_obs_names.key(cached_name)
+    else
+      @@cached_lat_names.key(cached_name)
+    end
   end
 
   ## Parsers

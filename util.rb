@@ -25,3 +25,10 @@ end
 class SetableMatrix < Matrix
   public :'[]=', :set_element, :set_component
 end
+
+def float_string?(str)
+  Float(str)
+  true
+rescue ArgumentError
+  false
+end
