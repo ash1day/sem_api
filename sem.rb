@@ -4,17 +4,22 @@ require_relative 'util'
 module Sem
   extend self
 
-  def summary(model, obs_names, nobs, cov, data)
-    if data
-      obs_names = data.keys
-      cov = calc_cov(data, obs_names)
-      nobs = data.first.length
-    end
   @@cached_obs_names = {}
   @@cached_lat_names = {}
 
+  def summary(model_h, obs_names, nobs, cov, data)
+    data = Hash[data.map { |k,v| [k, v.map(&:to_i)] }] # valuesがstringで来た時対策
+    cache_names(data) # dataのkeyが書き換わる副作用あり
 
-    File.open('./tmp/model.lav', 'w') { |f| f.write Sem.build_model_s(model) }
+    model_s = Sem.build_model_s(model_h)
+    required_obs_names = get_required_obs_names(model_s)
+    data = extract_required_columns(data, required_obs_names)
+
+    obs_names = data.keys
+    cov = calc_cov(data, obs_names)
+    nobs = data.first.length
+
+    File.open('./tmp/model.lav', 'w') { |f| f.write model_s }
     File.open('./tmp/elems.lav', 'w') do |f|
       f.puts cov.flatten.join(' ')
       f.puts obs_names.join(' ')
@@ -49,6 +54,7 @@ module Sem
     cov
   end
 
+  # TODO: 切片?
   # Rからの結果の文字列をパース
   def parse_r_out(r_out_str)
     parsed_h = {}
@@ -62,6 +68,7 @@ module Sem
     parsed_h
   end
 
+  # TODO: 切片
   # Rで読み込むテキストファイル用にhash to str変換
   def build_model_s(model)
     model_str = ''
@@ -85,6 +92,19 @@ module Sem
     end
 
     model_str
+  end
+
+  # model_sに含まれた観測変数名を配列で返す
+  def get_required_obs_names(model_s)
+    model_s.scan(/obs[0-9]+/).uniq.sort { |a, b| a[3..-1].to_i <=> b[3..-1].to_i }
+  end
+
+  def extract_required_columns(data, required_obs_names)
+    result = {}
+    required_obs_names.each do |obs_name|
+      result[obs_name.to_sym] = data[obs_name.to_sym]
+    end
+    result
   end
 
   def add_all_vars_names(parsed, obs_names)
