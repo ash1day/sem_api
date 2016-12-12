@@ -174,6 +174,7 @@ module Sem
   end
 
   def to_original_name(cached_name)
+    cached_name.slice!('.')
     if @@cached_obs_names.key(cached_name)
       @@cached_obs_names.key(cached_name)
     else
