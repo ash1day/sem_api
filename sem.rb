@@ -1,6 +1,5 @@
 require 'daru'
 require_relative 'util'
-require_relative 'parser'
 
 module Sem
   extend self
@@ -52,11 +51,11 @@ module Sem
     parsed_h = {}
     r_out_a = r_out_str.split("\n")
 
-    parsed_h['latent_variables'] = Parser.parse(r_out_a, :parse_vars,      'Latent',      1)
-    parsed_h['regressions']      = Parser.parse(r_out_a, :parse_vars,      'Regressions', 1)
-    parsed_h['covariances']      = Parser.parse(r_out_a, :parse_vars,      'Covariances', 1)
-    parsed_h['variances']        = Parser.parse(r_out_a, :parse_variances, 'Variances',   1)
-    parsed_h['goodness_of_fit']  = Parser.parse(r_out_a, :parse_fits,      'npar')
+    parsed_h['latent_variables'] = parse(r_out_a, :parse_vars,      'Latent',      1)
+    parsed_h['regressions']      = parse(r_out_a, :parse_vars,      'Regressions', 1)
+    parsed_h['covariances']      = parse(r_out_a, :parse_vars,      'Covariances', 1)
+    parsed_h['variances']        = parse(r_out_a, :parse_variances, 'Variances',   1)
+    parsed_h['goodness_of_fit']  = parse(r_out_a, :parse_fits,      'npar')
     parsed_h
   end
 
@@ -120,5 +119,66 @@ module Sem
     total_effects['values'] = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
     parsed['total_effects'] = total_effects
     parsed
+  end
+
+  ## Parsers
+
+  def parse(r_out_a, parser_name, title, offset = 0)
+    range = r_out_a.index_range(title, offset)
+    return {} unless range
+    send(parser_name, r_out_a[range])
+  end
+
+  def parse_vars(r_out_a)
+    parsed_h = {}
+    _r_out_a = r_out_a.map { |row| row.split(' ').map(&:strip) }
+    headers = _r_out_a.shift
+    var_name = ''
+
+    _r_out_a.each do |row|
+      unless float_string?(row[1])
+        # 左辺
+        # 例 lat0 =~
+
+        var_name = to_original_name(row.first.split(' ').first.strip)
+        parsed_h[var_name] = []
+      else
+        # 右辺
+        # 例 obs1    0.384  0.206  1.868  0.062
+
+        row_h = {name: to_original_name(row.first)}
+        row[1..-1].each_with_index do |str, i|
+          row_h[headers[i]] = str
+        end
+        parsed_h[var_name].push(row_h)
+      end
+    end
+    parsed_h
+  end
+
+  def parse_variances(r_out_a)
+    parsed_h = {}
+    _r_out_a = r_out_a.map { |row| row.split(' ').map(&:strip) }
+    headers = _r_out_a.shift
+
+    _r_out_a.each do |row|
+      original_name = to_original_name(row.shift)
+      parsed_h[original_name] = {}
+      row.each_with_index do |str, i|
+        parsed_h[original_name][headers[i]] = str
+      end
+    end
+    parsed_h
+  end
+
+  # 適合度をパース
+  def parse_fits(r_out_a)
+    fit_vars_a = r_out_a.map { |row| row.split }
+    fit_vars_h = {}
+    fit_vars_a.each_with_index do |row, row_key|
+      next if row_key.even?
+      row.each_with_index { |v, v_key| fit_vars_h[fit_vars_a[row_key - 1][v_key]] = v }
+    end
+    fit_vars_h
   end
 end
