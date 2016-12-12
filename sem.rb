@@ -13,6 +13,7 @@ module Sem
 
     model_s = Sem.build_model_s(model_h)
     required_obs_names = get_required_obs_names(model_s)
+    return if required_obs_names.empty?
     data = extract_required_columns(data, required_obs_names)
 
     cov = calc_cov(data, required_obs_names)
