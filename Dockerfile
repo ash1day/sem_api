@@ -38,7 +38,7 @@ RUN gem i bundle
 RUN bundle
 RUN su - -c "R -e \"install.packages('lavaan', dependencies=TRUE, repos='http://cran.at.r-project.org/')\""
 
-# Make port 4657 available for publish
+# Make port 80 available for publish
 EXPOSE 80
 
 # Start server
