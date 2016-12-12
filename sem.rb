@@ -15,14 +15,13 @@ module Sem
     required_obs_names = get_required_obs_names(model_s)
     data = extract_required_columns(data, required_obs_names)
 
-    obs_names = data.keys
-    cov = calc_cov(data, obs_names)
+    cov = calc_cov(data, required_obs_names)
     nobs = data.first.length
 
     File.open('./tmp/model.lav', 'w') { |f| f.write model_s }
     File.open('./tmp/elems.lav', 'w') do |f|
       f.puts cov.flatten.join(' ')
-      f.puts obs_names.join(' ')
+      f.puts required_obs_names.join(' ')
     end
 
     r_out_str = `Rscript sem.r #{nobs}`
@@ -30,7 +29,7 @@ module Sem
     return if r_out_str.nil?
 
     parsed = parse_r_out(r_out_str)
-    parsed = add_all_vars_names(parsed, obs_names)
+    parsed = add_all_vars_names(parsed, required_obs_names)
     parsed = add_total_effects(parsed)
   end
 
@@ -168,6 +167,8 @@ module Sem
   def to_tmp_name(original_name)
     if @@cached_obs_names[original_name.to_sym]
       @@cached_obs_names[original_name.to_sym]
+    elsif @@cached_lat_names[original_name.to_sym]
+      @@cached_lat_names[original_name.to_sym]
     else
       @@cached_lat_names[original_name.to_sym] = "lat#{@@cached_lat_names.length}"
     end
