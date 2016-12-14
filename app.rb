@@ -2,7 +2,7 @@ require 'sinatra'
 require 'sinatra/cross_origin'
 require 'json'
 
-require_relative 'sem'
+require_relative 'sem/sem'
 
 class App < Sinatra::Base
   register Sinatra::CrossOrigin
