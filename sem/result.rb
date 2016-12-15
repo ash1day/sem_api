@@ -18,13 +18,14 @@ module Sem
       names += @result['names']['lat'] unless @result['names']['lat'].empty?
 
       mat = SetableMatrix.zero(names.length)
+      key_name = 'Std.all' # 'Estimate'
 
       unless @result['latent_variables'].empty?
         @result['latent_variables'].each do |lat, vars|
           from = names.index(lat)
           vars.each do |v|
             to = names.index(v[:name])
-            mat[to, from] = v['Estimate'].to_f if v['Estimate']
+            mat[to, from] = v[key_name].to_f if v[key_name]
           end
         end
       end
@@ -34,7 +35,7 @@ module Sem
           to = names.index(lat)
           vars.each do |v|
             from = names.index(v[:name])
-            mat[to, from] = v['Estimate'].to_f if v['Estimate']
+            mat[to, from] = v[key_name].to_f if v[key_name]
           end
         end
       end
