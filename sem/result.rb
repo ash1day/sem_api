@@ -39,8 +39,16 @@ module Sem
         end
       end
 
-      total_effects['order'] = names
-      total_effects['values'] = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
+      total_effects_a = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
+
+      total_effects = {}
+      names.each_with_index do |from, from_k|
+        total_effects[from] = {}
+        names.each_with_index do |to, to_k|
+          total_effects[from][to] = total_effects_a[from_k][to_k]
+        end
+      end
+
       @result['total_effects'] = total_effects
     end
 
