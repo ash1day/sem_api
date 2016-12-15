@@ -8,7 +8,7 @@ require_relative 'util'
 module Sem
   extend self
 
-  def summary(model_h, obs_names, nobs, cov, data)
+  def summary(model_h, data)
     data = Hash[data.map { |k,v| [k, v.map(&:to_i)] }] # valuesがstringで来た時対策
 
     @name_converter = NameConverter.new(data)
