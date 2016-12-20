@@ -100,7 +100,7 @@ module Sem
 
     # column_names_sは以下のような文字列
     #                    Estimate  Std.Err  Z-value  P(>|z|)   Std.lv  Std.all
-    # 例えば '  Std.Err' の文字数をそのカラムの長さとする
+    # 例えば '  Std.Err ' の文字数をそのカラムの長さとする
     def calc_column_length(column_names_s)
       column_length_a = []
 
@@ -112,18 +112,27 @@ module Sem
 
       loop do
         # 頭の空白の数をカウント
-        head_non_space_index = columns.index(/[^\s]/)
-        break if head_non_space_index.nil?
+        len_head_spaces = columns.index(/[^\s]/)
+        break if len_head_spaces.nil?
         columns.strip!
 
         # 最初に現れる空白でない文字列のカウント
-        next_columns_head_index = columns.index(/\s/)
-        next_columns_head_index ||= columns.length # 最後のカラム
+        len_column_name = columns.index(/\s/)
 
-        # 頭の空白と文字列を足してカラムの長さとする
-        column_length_a.push(head_non_space_index + next_columns_head_index)
-        break if next_columns_head_index == columns.length # 最後のカラム
-        columns = columns[next_columns_head_index..-1]
+        if len_column_name
+          # 最後のカラムでない場合
+          columns = columns[len_column_name..-1]
+
+          # さらに後ろの空白の半分(切り捨て)をカウント
+          len_end_spaces = (columns.index(/[^\s]/) / 2).floor
+          columns = columns[len_end_spaces..-1]
+
+          column_length_a.push(len_head_spaces + len_column_name + len_end_spaces)
+        else
+          # 最後のカラムの場合
+          column_length_a.push(len_head_spaces + columns.length)
+          break
+        end
       end
 
       column_length_a
