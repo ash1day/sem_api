@@ -17,40 +17,43 @@ module Sem
       names = @result['names']['obs']
       names += @result['names']['lat'] unless @result['names']['lat'].empty?
 
-      mat = SetableMatrix.zero(names.length)
-      key_name = 'Std.all' # 'Estimate'
+      @result['total_effects'] = {}
 
-      unless @result['latent_variables'].empty?
-        @result['latent_variables'].each do |lat, vars|
-          from = names.index(lat)
-          vars.each do |v|
-            to = names.index(v[:name])
-            mat[to, from] = v[key_name].to_f if v[key_name]
+      ['Std.all', 'Estimate'].each do |key_name|
+        mat = SetableMatrix.zero(names.length)
+
+        unless @result['latent_variables'].empty?
+          @result['latent_variables'].each do |lat, vars|
+            from = names.index(lat)
+            vars.each do |v|
+              to = names.index(v[:name])
+              mat[to, from] = v[key_name].to_f if v[key_name]
+            end
           end
         end
-      end
 
-      unless @result['regressions'].empty?
-        @result['regressions'].each do |lat, vars|
-          to = names.index(lat)
-          vars.each do |v|
-            from = names.index(v[:name])
-            mat[to, from] = v[key_name].to_f if v[key_name]
+        unless @result['regressions'].empty?
+          @result['regressions'].each do |lat, vars|
+            to = names.index(lat)
+            vars.each do |v|
+              from = names.index(v[:name])
+              mat[to, from] = v[key_name].to_f if v[key_name]
+            end
           end
         end
-      end
 
-      total_effects_a = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
+        total_effects_a = ((Matrix.I(names.length) - mat).inv - Matrix.I(names.length)).to_a
 
-      total_effects = {}
-      names.each_with_index do |from, from_k|
-        total_effects[from] = {}
-        names.each_with_index do |to, to_k|
-          total_effects[from][to] = total_effects_a[from_k][to_k]
+        total_effects = {}
+        names.each_with_index do |from, from_k|
+          total_effects[from] = {}
+          names.each_with_index do |to, to_k|
+            total_effects[from][to] = total_effects_a[from_k][to_k]
+          end
         end
-      end
 
-      @result['total_effects'] = total_effects
+        @result['total_effects'][key_name] = total_effects
+      end
     end
 
     def to_h
